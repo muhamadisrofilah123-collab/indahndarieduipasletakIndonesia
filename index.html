@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ulangan Harian IPAS - Indonesia</title>
+<style>
+:root{--navy:#17324d;--blue:#2878b5;--sky:#eaf5ff;--gold:#ffd166;--green:#198754;--red:#c0392b}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:linear-gradient(135deg,#e8f7ff,#fff7df);color:#203040}
+header{background:linear-gradient(120deg,#17324d,#2878b5);color:white;padding:24px 16px;text-align:center}
+header .emoji{font-size:38px}
+header h1{margin:6px 0;font-size:clamp(23px,4vw,34px)}
+header p{margin:6px 0 0;opacity:.95}
+main{max-width:900px;margin:18px auto;padding:0 14px 32px}
+.panel{background:white;border-radius:18px;padding:18px;box-shadow:0 7px 22px #17324d16;margin-bottom:16px}
+label.name-label{display:block;font-weight:800;margin-bottom:8px}
+input[type=text]{width:100%;font:inherit;padding:13px 14px;border:2px solid #c8dced;border-radius:12px;outline:none}
+input[type=text]:focus{border-color:var(--blue)}
+.note{font-size:14px;color:#536779;margin:10px 0 0}
+.progress-wrap{height:9px;background:#e3edf4;border-radius:99px;overflow:hidden;margin-top:12px}
+#progress{height:100%;width:0;background:linear-gradient(90deg,#38bdf8,#198754);transition:width .2s}
+.question{border:1px solid #dce8ef;border-radius:15px;padding:16px;margin:14px 0;background:#fff}
+.qtop{display:flex;gap:10px;align-items:flex-start}
+.qnum{background:var(--sky);color:#15537d;font-weight:900;border-radius:10px;padding:6px 9px;white-space:nowrap}
+.qtext{font-weight:750;line-height:1.45;padding-top:4px}
+.options{display:grid;gap:9px;margin:14px 0 0 2px}
+.option{display:flex;gap:10px;align-items:flex-start;padding:11px 12px;border:1.5px solid #d8e3eb;border-radius:11px;cursor:pointer;line-height:1.4;transition:.15s}
+.option:hover{background:#f2f9ff;border-color:#8dc4e7}
+.option:has(input:checked){background:#eaf5ff;border-color:#2878b5}
+.option input{margin-top:4px;accent-color:#2878b5;flex-shrink:0}
+button{font:inherit;font-weight:800;border:0;border-radius:12px;padding:14px 20px;cursor:pointer}
+#submitBtn{width:100%;background:var(--green);color:white;font-size:17px;box-shadow:0 4px 0 #12633d}
+#submitBtn:hover{filter:brightness(1.05)}
+#submitBtn:disabled{opacity:.6;cursor:default}
+#result{display:none;text-align:center}
+.score-circle{width:142px;height:142px;margin:12px auto;border-radius:50%;background:var(--sky);border:8px solid #8ed0f4;display:flex;flex-direction:column;justify-content:center;align-items:center;color:#15537d}
+.score-circle strong{font-size:42px;line-height:1}
+.score-circle span{font-weight:800}
+#result h2{margin:5px 0}
+#result .result-name{font-size:18px;font-weight:800}
+.result-msg{font-size:17px;margin:8px 0 16px}
+.review{text-align:left;margin-top:20px}
+.review-item{padding:12px;border-radius:10px;margin:9px 0;background:#f4f8fb;border-left:5px solid #bbb}
+.review-item.correct{border-color:var(--green)}
+.review-item.wrong{border-color:var(--red)}
+.review-item p{margin:5px 0}
+.small{font-size:13px;color:#627789}
+#restart{background:var(--blue);color:white;margin-top:12px}
+footer{text-align:center;color:#5b7080;font-size:12px;padding:0 12px 24px}
+@media(min-width:700px){.options{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<header>
+  <div class="emoji">🌏 🇮🇩 🌿</div>
+  <h1>ULANGAN HARIAN IPAS</h1>
+  <p>Indonesia: Alam, Sumber Daya, Perdagangan, dan Perjuangan</p>
+</header>
+<main>
+  <section class="panel" id="identity">
+    <label class="name-label" for="studentName">✏️ Nama lengkap siswa</label>
+    <input id="studentName" type="text" placeholder="Tuliskan nama anak di sini..." autocomplete="name">
+    <p class="note">Pilih satu jawaban yang paling tepat untuk setiap soal. Ada 50 soal pilihan ganda. Nilai akan muncul setelah tombol <b>Selesai dan Lihat Nilai</b> ditekan.</p>
+    <div class="progress-wrap"><div id="progress"></div></div>
+    <p class="small" id="answeredCount">Terjawab 0 dari 50 soal</p>
+  </section>
+  <form id="quizForm">
+    <div id="questions"></div>
+    <section class="panel">
+      <p><b>Sudah selesai menjawab?</b> Periksa kembali jawabanmu sebelum mengumpulkan.</p>
+      <button id="submitBtn" type="submit">🏁 Selesai dan Lihat Nilai</button>
+    </section>
+  </form>
+  <section class="panel" id="result">
+    <div style="font-size:34px">🎉</div>
+    <h2>Hasil Ulangan</h2>
+    <div class="result-name" id="resultName"></div>
+    <div class="score-circle"><strong id="score">0</strong><span> NILAI</span></div>
+    <p class="result-msg" id="resultMsg"></p>
+    <p id="detailScore"></p>
+    <button id="restart" type="button" onclick="location.reload()">🔄 Ulangi Ulangan</button>
+    <div class="review">
+      <h3>📘 Pembahasan Jawaban</h3>
+      <p class="small">Bagian ini bisa digunakan guru untuk membahas soal setelah ulangan selesai.</p>
+      <div id="reviewList"></div>
+    </div>
+  </section>
+</main>
+<footer>indahndariEdu • Game ulangan harian IPAS • Bisa dibuka melalui HP, tablet, dan komputer</footer>
+<script>
+const questions = [
+{q:"Secara geografis, Indonesia terletak di antara dua benua, yaitu ....",o:["Asia dan Eropa","Australia dan Afrika","Asia dan Australia","Eropa dan Afrika"],a:2,e:"Indonesia berada di antara Benua Asia dan Benua Australia."},
+{q:"Secara geografis, Indonesia terletak di antara dua samudra, yaitu ....",o:["Samudra Atlantik dan Arktik","Samudra Hindia dan Pasifik","Samudra Pasifik dan Atlantik","Samudra Hindia dan Arktik"],a:1,e:"Indonesia terletak di antara Samudra Hindia dan Samudra Pasifik."},
+{q:"Letak astronomis Indonesia kira-kira berada pada ....",o:["20° LU–40° LU dan 10° BT–30° BT","6° LS–11° LU dan 95° BB–141° BB","23° LU–23° LS dan 0°","6° LU–11° LS dan 95° BT–141° BT"],a:3,e:"Letak astronomis Indonesia sekitar 6° LU–11° LS dan 95° BT–141° BT."},
+{q:"Salah satu pengaruh letak astronomis Indonesia yang berada di sekitar khatulistiwa adalah ....",o:["Tidak mendapat sinar matahari","Beriklim tropis","Selalu turun salju","Mengalami empat musim"],a:1,e:"Letak dekat khatulistiwa membuat Indonesia beriklim tropis."},
+{q:"Negara yang berbatasan darat dengan wilayah Indonesia adalah ....",o:["India, Tiongkok, dan Australia","Thailand, Laos, dan Vietnam","Malaysia, Papua Nugini, dan Timor-Leste","Filipina, Singapura, dan Brunei"],a:2,e:"Batas darat Indonesia berada dengan Malaysia di Kalimantan, Papua Nugini di Papua, dan Timor-Leste di Pulau Timor."},
+{q:"Pulau Indonesia yang berbatasan darat dengan Malaysia adalah ....",o:["Bali","Sulawesi","Kalimantan","Jawa"],a:2,e:"Malaysia dan Indonesia berbatasan darat di Pulau Kalimantan."},
+{q:"Pulau Indonesia yang berbatasan darat dengan Papua Nugini adalah ....",o:["Papua","Kalimantan","Sumatra","Lombok"],a:0,e:"Wilayah Indonesia di Pulau Papua berbatasan darat dengan Papua Nugini."},
+{q:"Sengketa batas wilayah darat Indonesia dan Malaysia pernah berkaitan dengan ....",o:["Wilayah Ambalat sebagai kawasan maritim","Perbatasan di Pulau Kalimantan, termasuk kawasan yang disengketakan","Pulau Jawa","Pulau Sipadan dan Ligitan saja"],a:1,e:"Persoalan batas darat di Kalimantan pernah melibatkan penegasan garis perbatasan. Sipadan-Ligitan merupakan sengketa pulau yang diputuskan Mahkamah Internasional, sedangkan Ambalat berkaitan dengan wilayah laut."},
+{q:"Ambalat sering dibicarakan dalam hubungan Indonesia–Malaysia karena berkaitan dengan ....",o:["Pembagian sawah di Jawa","Batas wilayah perairan dan hak atas sumber daya laut","Batas wilayah udara dengan Thailand","Jalur kereta api"],a:1,e:"Ambalat berkaitan dengan klaim wilayah maritim dan hak atas sumber daya di Laut Sulawesi."},
+{q:"Sikap yang tepat ketika menghadapi persoalan perbatasan dengan negara lain adalah ....",o:["Mengabaikan semua aturan","Langsung menggunakan kekerasan","Menutup semua hubungan selamanya","Menyelesaikannya melalui diplomasi dan hukum internasional"],a:3,e:"Persoalan perbatasan sebaiknya diselesaikan secara damai melalui diplomasi dan aturan hukum."},
+{q:"Julukan Indonesia sebagai Zamrud Khatulistiwa menggambarkan ....",o:["Negeri tanpa hutan","Keindahan alam dan kehijauan wilayah Indonesia di sekitar khatulistiwa","Wilayah yang seluruhnya berupa gurun","Negeri yang selalu tertutup salju"],a:1,e:"Julukan itu menggambarkan alam Indonesia yang hijau dan indah di wilayah tropis."},
+{q:"Garis Wallace digunakan untuk menjelaskan perbedaan persebaran ....",o:["Curah hujan setiap jam","Bahasa daerah","Jenis tanah pertanian","Flora dan fauna di wilayah Indonesia"],a:3,e:"Garis Wallace membantu menjelaskan perbedaan persebaran fauna bercorak Asiatis dan wilayah peralihan."},
+{q:"Garis Weber sering digunakan untuk menggambarkan batas pengaruh fauna ....",o:["Gurun dan tundra","Afrika dan Eropa","Asiatis dan Australis di kawasan Indonesia timur","Kutub Utara dan Kutub Selatan"],a:2,e:"Garis Weber membantu menggambarkan peralihan pengaruh fauna Asia dan Australia."},
+{q:"Wilayah Indonesia yang umumnya memiliki fauna bercorak Asiatis adalah ....",o:["Sumatra, Jawa, dan Kalimantan","Semua pulau memiliki fauna yang sama","Maluku bagian timur saja","Papua dan Kepulauan Aru saja"],a:0,e:"Fauna Asiatis banyak ditemukan di Sumatra, Jawa, Kalimantan, dan Bali."},
+{q:"Contoh fauna khas wilayah Asiatis adalah ....",o:["Cenderawasih","Kasuari","Kanguru pohon","Orangutan"],a:3,e:"Orangutan merupakan salah satu fauna khas wilayah Asiatis, terutama Sumatra dan Kalimantan."},
+{q:"Contoh fauna wilayah peralihan yang terkenal dari Sulawesi adalah ....",o:["Gajah Sumatra","Anoa","Cenderawasih","Harimau Sumatra"],a:1,e:"Anoa merupakan fauna khas Sulawesi yang termasuk wilayah peralihan."},
+{q:"Burung cenderawasih merupakan fauna khas wilayah ....",o:["Australis","Eropa","Asiatis","Arktik"],a:0,e:"Cenderawasih merupakan fauna khas Papua dan wilayah bercorak Australis."},
+{q:"Contoh flora yang banyak dikenal dari wilayah Asiatis Indonesia adalah ....",o:["Pohon maple Kanada","Rafflesia","Pohon pinus kutub","Kaktus gurun Sahara"],a:1,e:"Rafflesia dapat ditemukan di wilayah Sumatra dan termasuk contoh flora khas Indonesia bagian barat."},
+{q:"Komodo merupakan contoh fauna yang berasal dari wilayah ....",o:["Peralihan, terutama Nusa Tenggara","Kutub Selatan","Australis di Papua","Asiatis murni di Sumatra"],a:0,e:"Komodo hidup di kawasan Nusa Tenggara yang termasuk wilayah fauna peralihan."},
+{q:"Ciri yang tepat tentang persebaran flora dan fauna Indonesia adalah ....",o:["Semua wilayah memiliki jenis yang sama","Persebarannya dipengaruhi sejarah geologi dan kondisi lingkungan","Tidak dipengaruhi kondisi alam","Hanya dipengaruhi nama provinsi"],a:1,e:"Sejarah geologi, iklim, dan kondisi lingkungan memengaruhi persebaran makhluk hidup."},
+{q:"Sumber daya alam hayati adalah sumber daya yang berasal dari ....",o:["Makhluk hidup","Benda plastik","Cahaya buatan","Batuan dan logam saja"],a:0,e:"Sumber daya hayati berasal dari makhluk hidup, seperti tumbuhan dan hewan."},
+{q:"Berikut yang termasuk sumber daya alam nonhayati adalah ....",o:["Padi dan jagung","Kayu dan rotan","Minyak bumi dan batu bara","Ikan dan sapi"],a:2,e:"Minyak bumi dan batu bara merupakan sumber daya alam nonhayati."},
+{q:"Contoh sumber daya alam hayati yang dapat diperbarui jika dikelola dengan baik adalah ....",o:["Emas yang sudah ditambang","Minyak bumi","Hutan dan ikan","Batu bara"],a:2,e:"Hutan dan populasi ikan dapat pulih jika dimanfaatkan secara berkelanjutan."},
+{q:"Bahan pangan yang berasal dari tumbuhan adalah ....",o:["Emas dan perak","Batu kapur dan pasir","Beras dan jagung","Bensin dan solar"],a:2,e:"Beras dan jagung merupakan bahan pangan yang berasal dari tumbuhan."},
+{q:"Bahan sandang tradisional dapat dibuat dari ....",o:["Batu bara","Batu granit","Bensin","Kapas"],a:3,e:"Serat kapas dapat diolah menjadi benang dan kain untuk pakaian."},
+{q:"Bahan papan untuk membangun rumah yang berasal dari sumber daya alam adalah ....",o:["Gula","Minyak goreng","Garam","Kayu"],a:3,e:"Kayu dapat dimanfaatkan sebagai bahan bangunan."},
+{q:"Tanaman yang dikenal dapat dimanfaatkan sebagai obat tradisional adalah ....",o:["Batu bara","Rumput plastik","Kaca","Jahe"],a:3,e:"Jahe sering dimanfaatkan dalam ramuan tradisional, meskipun penggunaannya tetap perlu bijak."},
+{q:"Tanaman yang sering digunakan sebagai bumbu masakan adalah ....",o:["Karet ban","Kunyit","Batu kapur","Pasir"],a:1,e:"Kunyit merupakan salah satu tanaman bumbu yang memberi warna dan rasa pada masakan."},
+{q:"Contoh tanaman yang dapat digunakan sebagai bumbu sekaligus dikenal dalam ramuan tradisional adalah ....",o:["Batu granit","Jahe","Besi","Bensin"],a:1,e:"Jahe digunakan sebagai bumbu dan juga dikenal dalam ramuan tradisional."},
+{q:"Salah satu alasan Indonesia menjadi jalur strategis perdagangan dunia adalah ....",o:["Jauh dari jalur pelayaran","Terletak di antara dua samudra dan dua benua","Tidak memiliki laut","Tidak mempunyai pelabuhan"],a:1,e:"Letak Indonesia strategis bagi jalur pelayaran dan perdagangan internasional."},
+{q:"Selat Malaka penting bagi perdagangan karena ....",o:["Hanya digunakan untuk menangkap ikan","Menjadi jalur pelayaran ramai yang menghubungkan kawasan perdagangan","Merupakan gurun luas","Tidak dapat dilalui kapal"],a:1,e:"Selat Malaka merupakan salah satu jalur pelayaran dan perdagangan penting dunia."},
+{q:"Salah satu hasil bumi Nusantara yang menarik pedagang asing pada masa lalu adalah ....",o:["Salju","Es kutub","Batu meteor saja","Rempah-rempah"],a:3,e:"Rempah-rempah seperti cengkih dan pala sangat berharga dalam perdagangan masa lalu."},
+{q:"Renaisans yang ikut mendorong penjelajahan bangsa Eropa berarti ....",o:["Berakhirnya seluruh perdagangan","Penemuan mesin uap di Indonesia","Kelahiran kembali minat pada ilmu pengetahuan dan kebudayaan klasik","Larangan belajar ilmu pengetahuan"],a:2,e:"Renaisans adalah masa kebangkitan kembali minat pada seni, ilmu pengetahuan, dan pemikiran."},
+{q:"Jatuhnya Konstantinopel ke tangan Turki Utsmani pada 1453 mendorong bangsa Eropa untuk ....",o:["Mencari jalur perdagangan baru ke Asia","Pindah ke Kutub Utara","Berhenti berlayar selamanya","Menghentikan penggunaan kapal"],a:0,e:"Perubahan penguasaan Konstantinopel mendorong bangsa Eropa mencari jalur perdagangan alternatif menuju Asia."},
+{q:"Semboyan Gold, Glory, dan Gospel secara berurutan berarti ....",o:["Kekayaan, kejayaan, dan penyebaran agama","Pangan, pakaian, dan rumah","Ilmu, seni, dan olahraga","Laut, gunung, dan sungai"],a:0,e:"Gold berarti mencari kekayaan, Glory kejayaan atau kekuasaan, dan Gospel penyebaran agama."},
+{q:"Yang termasuk faktor penarik kedatangan bangsa asing ke Nusantara adalah ....",o:["Tidak ada pelabuhan","Tidak ada hasil alam","Kekayaan rempah-rempah dan hasil bumi","Wilayahnya tertutup untuk perdagangan"],a:2,e:"Kekayaan rempah-rempah dan posisi perdagangan Nusantara menarik bangsa asing."},
+{q:"Bangsa Eropa yang datang ke Maluku untuk mencari rempah-rempah antara lain ....",o:["Kanada dan Meksiko","Mesir dan Maroko saja","Portugis dan Belanda","Korea dan Mongolia"],a:2,e:"Portugis dan Belanda termasuk bangsa Eropa yang datang ke Maluku untuk berdagang rempah-rempah."},
+{q:"Salah satu tokoh perjuangan rakyat Aceh melawan Belanda adalah ....",o:["Sisingamangaraja XII","Pattimura","Pangeran Antasari","Cut Nyak Dhien"],a:3,e:"Cut Nyak Dhien adalah pahlawan perempuan dari Aceh."},
+{q:"Tokoh yang dikenal memimpin perlawanan rakyat Tapanuli terhadap Belanda adalah ....",o:["Sultan Hasanuddin","I Gusti Ketut Jelantik","Sisingamangaraja XII","Pangeran Diponegoro"],a:2,e:"Sisingamangaraja XII memimpin perlawanan terhadap Belanda di wilayah Tapanuli."},
+{q:"Perang Padri di Sumatra Barat antara lain berkaitan dengan perjuangan tokoh ....",o:["Cut Nyak Meutia","Pangeran Antasari","Pattimura","Tuanku Imam Bonjol"],a:3,e:"Tuanku Imam Bonjol merupakan tokoh penting dalam Perang Padri di Sumatra Barat."},
+{q:"Perlawanan besar rakyat Jawa terhadap Belanda pada 1825–1830 dipimpin oleh ....",o:["Pangeran Diponegoro","Sisingamangaraja XII","Kapitan Pattimura","Tuanku Imam Bonjol"],a:0,e:"Pangeran Diponegoro memimpin Perang Jawa pada 1825–1830."},
+{q:"Salah satu penyebab Perang Diponegoro adalah ....",o:["Perselisihan tentang tanaman cengkih di Maluku","Pemasangan patok jalan yang melewati tanah dan makam leluhur Diponegoro","Perebutan tambang emas di Papua","Pembangunan pelabuhan di Aceh"],a:1,e:"Pemasangan patok jalan yang melewati tanah leluhur Diponegoro menjadi salah satu pemicu perang."},
+{q:"Tokoh yang dikenal dalam perlawanan rakyat Bali terhadap Belanda adalah ....",o:["I Gusti Ketut Jelantik","Cut Nyak Dhien","Pangeran Antasari","Tuanku Imam Bonjol"],a:0,e:"I Gusti Ketut Jelantik dikenal dalam perlawanan rakyat Bali, termasuk Perang Jagaraga."},
+{q:"Tokoh perlawanan rakyat Maluku pada 1817 adalah ....",o:["Pangeran Diponegoro","Pangeran Antasari","Pattimura (Thomas Matulessy)","Sisingamangaraja XII"],a:2,e:"Pattimura memimpin perlawanan rakyat Maluku terhadap Belanda pada 1817."},
+{q:"Tokoh yang memimpin perlawanan rakyat Kalimantan Selatan dalam Perang Banjar adalah ....",o:["Cut Nyak Dhien","Pattimura","Tuanku Imam Bonjol","Pangeran Antasari"],a:3,e:"Pangeran Antasari merupakan tokoh penting dalam Perang Banjar."},
+{q:"Salah satu tujuan perlawanan rakyat Indonesia terhadap penjajah adalah ....",o:["Menghilangkan budaya sendiri","Membantu penjajah menguasai wilayah","Menghentikan semua kegiatan masyarakat","Mempertahankan tanah air dan menolak penindasan"],a:3,e:"Perlawanan dilakukan untuk mempertahankan wilayah, hak, dan kehidupan rakyat dari penjajahan."},
+{q:"Indonesia disebut negara maritim karena ....",o:["Wilayah lautnya luas dan terdiri atas banyak pulau","Hanya memiliki satu pulau","Tidak memiliki pantai","Seluruh wilayahnya berupa gurun"],a:0,e:"Indonesia adalah negara kepulauan dengan wilayah laut yang luas."},
+{q:"Kegiatan ekonomi yang mencerminkan Indonesia sebagai negara maritim adalah ....",o:["Perikanan dan pelayaran","Pertambangan di gurun saja","Pembuatan salju","Peternakan rusa kutub"],a:0,e:"Perikanan, pelayaran, dan kegiatan pelabuhan berkaitan dengan kehidupan maritim."},
+{q:"Indonesia disebut negara agraris karena ....",o:["Banyak penduduk bekerja di bidang pertanian dan tanahnya mendukung kegiatan bercocok tanam","Hanya menghasilkan minyak bumi","Tidak memiliki lahan pertanian","Semua penduduk bekerja sebagai pelaut"],a:0,e:"Indonesia memiliki kegiatan pertanian yang penting dan banyak penduduk bekerja di sektor ini."},
+,
+{q:"Cara menjaga sumber daya alam agar tetap bermanfaat bagi generasi mendatang adalah ....",o:["Menggunakannya secara bijak dan menjaga kelestarian lingkungan","Membuang limbah ke sungai","Menebang semua pohon tanpa menanam kembali","Menangkap semua ikan kecil"],a:0,e:"Pemanfaatan yang bijak dan pelestarian lingkungan membantu menjaga sumber daya alam."}
+];
+
+const qContainer = document.getElementById('questions');
+questions.forEach((item,i)=>{
+  const section=document.createElement('section');
+  section.className='question';
+  section.innerHTML=`<div class="qtop"><span class="qnum">Soal ${i+1}</span><div class="qtext">${item.q}</div></div>
+  <div class="options">${item.o.map((opt,j)=>`<label class="option"><input type="radio" name="q${i}" value="${j}"><span><b>${String.fromCharCode(65+j)}.</b> ${opt}</span></label>`).join('')}</div>`;
+  qContainer.appendChild(section);
+});
+function updateProgress(){
+ const count=questions.reduce((n,_,i)=>n+(document.querySelector(`input[name="q${i}"]:checked`)?1:0),0);
+ document.getElementById('answeredCount').textContent=`Terjawab ${count} dari ${questions.length} soal`;
+ document.getElementById('progress').style.width=(count/questions.length*100)+'%';
+}
+document.getElementById('quizForm').addEventListener('change',updateProgress);
+document.getElementById('quizForm').addEventListener('submit',function(ev){
+ ev.preventDefault();
+ const name=document.getElementById('studentName').value.trim();
+ if(!name){alert('Silakan tuliskan nama siswa terlebih dahulu.');document.getElementById('studentName').focus();return;}
+ const unanswered=questions.reduce((n,_,i)=>n+(!document.querySelector(`input[name="q${i}"]:checked`)?1:0),0);
+ if(unanswered>0 && !confirm(`Masih ada ${unanswered} soal yang belum dijawab. Tetap kumpulkan jawaban?`))return;
+ let correct=0;
+ const review=document.getElementById('reviewList');review.innerHTML='';
+ questions.forEach((item,i)=>{
+   const chosen=document.querySelector(`input[name="q${i}"]:checked`);
+   const val=chosen?Number(chosen.value):-1;
+   const ok=val===item.a;
+   if(ok)correct++;
+   const div=document.createElement('div');div.className='review-item '+(ok?'correct':'wrong');
+   const chosenText=val<0?'Belum dijawab':String.fromCharCode(65+val)+'. '+item.o[val];
+   div.innerHTML=`<p><b>${i+1}. ${item.q}</b></p><p>${ok?'✅':'❌'} Jawaban siswa: ${chosenText}</p><p><b>Jawaban benar: ${String.fromCharCode(65+item.a)}. ${item.o[item.a]}</b></p><p class="small">${item.e}</p>`;
+   review.appendChild(div);
+ });
+ const score=Math.round(correct/questions.length*100);
+ document.getElementById('resultName').textContent='Nama: '+name;
+ document.getElementById('score').textContent=score;
+ document.getElementById('detailScore').textContent=`Jawaban benar: ${correct} dari ${questions.length} soal • Salah atau kosong: ${questions.length-correct} soal`;
+ document.getElementById('resultMsg').textContent=score>=90?'Luar biasa! Pemahamanmu sangat baik! 🌟':score>=80?'Bagus sekali! Terus pertahankan! 👏':score>=70?'Bagus! Baca kembali pembahasan untuk makin memahami materi. 💪':score>=60?'Tetap semangat! Pelajari kembali materi dan pembahasannya, ya. 📚':'Jangan menyerah. Gunakan pembahasan untuk belajar lagi dan mencoba kembali. 🌱';
+ document.getElementById('quizForm').style.display='none';
+ document.getElementById('identity').style.display='none';
+ document.getElementById('result').style.display='block';
+ window.scrollTo({top:0,behavior:'smooth'});
+});
+</script>
+</body>
+</html>
